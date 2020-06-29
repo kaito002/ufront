@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 interface UFrontProps {
   name: string,
   host: string,
-  renderMethodName: string
+  renderMethodName?: string
 }
 
 const isJsFile = (filepath: string) => filepath.endsWith(".js");
@@ -13,7 +13,7 @@ const removeContainerHost = (url: string) => url.replace(window.location.origin,
 
 const nodesToArray = (nodes?: HTMLCollection) => Array.prototype.slice.call(nodes || new HTMLCollection());
 
-export const UFront = ({ name, host, renderMethodName }: UFrontProps) => {
+export const UFront = ({ name, host }: UFrontProps) => {
   const containerId = `${name}-container`;
 
   const containerLibsId = `${name}-libs-container`;
