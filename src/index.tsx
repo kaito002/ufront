@@ -66,13 +66,6 @@ export const UFront = ({ name, host, renderMethodName }: UFrontProps) => {
     for (let i = 0; i < files.length; i++) {
       const file = files[i];
       const id = `${name}-${file}`;
-      if (document.getElementById(id)) {
-        if (file.includes("main")) {
-          window[renderMethodName](containerId);
-          mediaFixer();
-        }
-        continue;
-      }
 
       if (isJsFile(file)) {
         loadJsFile(file, id);
