@@ -1,27 +1,24 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 interface UFrontProps {
   name: string,
   host: string,
   renderMethodName?: string
 }
 
-const isJsFile = (filepath: string) => filepath.endsWith(".js");
-
-const isCssFile = (filepath: string) => filepath.endsWith(".css");
-
 const removeContainerHost = (url: string) => url.replace(window.location.origin, "");
 
 const nodesToArray = (nodes?: HTMLCollection) => Array.prototype.slice.call(nodes || new HTMLCollection());
 
 export const UFront = ({ name, host }: UFrontProps) => {
-  const containerId = `${name}-container`;
-
-  const containerLibsId = `${name}-libs-container`;
+  const containerId = `${name}-container`;  
 
   const [loadingError, setLoadingError] = useState(false);
 
-  const mediaFixer = () => {
-    const container = document.getElementById(containerLibsId);
+  const loadComponent = () => {
+    renderMicroSection()
+    
+    const container = document.getElementById(containerId);
+
     const mediaElements = [
       ...nodesToArray(container?.getElementsByTagName("img")),
       ...nodesToArray(container?.getElementsByTagName("video")),
@@ -29,65 +26,52 @@ export const UFront = ({ name, host }: UFrontProps) => {
     ]
 
     mediaElements.forEach(element => {
-      console.log(element)
       if (!element.src.startsWith(host)) {
         element.src = `${host}${removeContainerHost(element.src)}`
       }
     });
   }
 
-  const loadJsFile = (filepath: string, id: string) => {
+  const loadBundle = () => {
     const script = document.createElement("script");
 
-    script.id = id;
-    script.src = `${host}/${filepath}`
+    script.id = `${name}-bundle`;
+    script.src = `${host}/micro-section`
     script.crossOrigin = "";
     script.async = true;
-    script.onload = mediaFixer;
-    document.getElementById(containerLibsId)?.insertBefore(script, document.getElementById(containerId));
+    script.onerror = onError;
+    script.onload = loadComponent;
+    document.getElementById(containerId)?.appendChild(script);
   }
 
-  const loadCssFile = (filepath: string, id: string) => {
-    const link = document.createElement("link");
-
-    link.id = id;
-    link.rel = "stylesheet";
-    link.type = "text/css";
-    link.href = `${host}/${filepath}`;
-    link.crossOrigin = "";
-    document.getElementById(containerLibsId)?.insertBefore(link, document.getElementById(containerId));
+  const onError = () => {
+    setLoadingError(true);
+   console.error(`Error Getting ${name} frontend: `);
   }
 
-  const onRequestManifest = (response: any) => response.json();
+  const renderMicroSection = () =>{
+    window[`render${name}`](containerId);
+  }
 
-  const onManifestSuccess = (manifest: any) => {
-    const files = manifest.entrypoints;
-
-    for (let i = 0; i < files.length; i++) {
-      const file = files[i];
-      const id = `${name}-${file}`;
-
-      if (isJsFile(file)) {
-        loadJsFile(file, id);
-      }
-
-      if (isCssFile(file)) {
-        loadCssFile(file, id);
-      }
+  const unmountMicroSection = () => {
+    if (window.hasOwnProperty(`unmount${name}`)) {
+      window[`unmount${name}`](containerId) 
     }
   }
 
-  const onError = (error: Error) => {
-    setLoadingError(true);
-    console.error(`Error Getting ${name} frontend: `, error);
-  }
+  useEffect(() => { 
+    if (window.hasOwnProperty(`render${name}`)) {
+      loadComponent()
+    } else {
+      loadBundle() 
+    }
+  }, []);
 
   useEffect(() => {
-    fetch(`${host}/asset-manifest.json`)
-      .then(onRequestManifest)
-      .then(onManifestSuccess)
-      .catch(onError);
-  }, []);
+    return () => {
+     unmountMicroSection();
+    }
+  })
 
   if (loadingError) {
     return (
@@ -98,13 +82,9 @@ export const UFront = ({ name, host }: UFrontProps) => {
   }
 
   return (
-    <main id={containerLibsId}>
-      <section id={containerId}></section>
-    </main>
+    <section id={containerId}></section>
   )
 }
-
-
 
 //Styles
 const ufrontStyles = {

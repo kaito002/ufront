@@ -23,7 +23,7 @@ import { Ufront } from 'ufront'
 
 class Example extends Component {
   render() {
-    return <UFront host="SECTION HOST" name="SECTION NAME" renderMethodName="RENDER METHOD NAME" />
+    return <UFront host="SECTION HOST" name="SECTION NAME"/>
   }
 }
 ```
