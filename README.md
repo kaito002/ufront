@@ -19,7 +19,7 @@ npm install --save ufront
 ```tsx
 import React, { Component } from 'react'
 
-import { Ufront } from 'ufront'
+import { UFront } from 'ufront'
 
 class Example extends Component {
   render() {
