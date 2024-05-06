@@ -1,3 +1,6 @@
+# DEPRECATED
+## This project has been abandoned
+
 # µFront
 
 <p align="center">
